@@ -1,0 +1,13 @@
+[package]
+name = "luppa"
+version = "0.1.0"
+edition = "2021"
+description = "A comprehensive passport validation system in Rust"
+
+[dependencies]
+chrono = "0.4"
+image = "0.24"
+tesseract = "0.13"
+thiserror = "1.0"
+tempfile = "3.8"
+base64 = "0.21"
