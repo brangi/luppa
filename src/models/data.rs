@@ -10,6 +10,7 @@ pub struct MrzData {
     pub gender: String,
     pub date_of_expiry: String,
     pub personal_number: Option<String>,
+    pub place_of_birth: Option<String>,  // Added place of birth to MRZ data
     pub check_digits: CheckDigits,
 }
 

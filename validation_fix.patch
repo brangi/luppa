@@ -1,0 +1,84 @@
+--- a/src/ml/validation.rs
++++ b/src/ml/validation.rs
+@@ -131,7 +131,7 @@
+     // Validate MRZ data using AI-enhanced methods
+     fn validate_mrz(&self, mrz_data: &MrzData) -> f32 {
+-        let mut confidence = 0.0;
++        let mut confidence: f32 = 0.0;
+         
+         // Check if we have the required MRZ fields
+         if !mrz_data.document_number.is_empty() {
+@@ -173,13 +173,13 @@
+         }
+         
+         // Cap confidence between 0 and 1
+-        confidence.max(0.0).min(1.0)
++        confidence.max(0.0_f32).min(1.0_f32)
+     }
+     
+     // Validate visual data using AI-enhanced methods
+     fn validate_visual_data(&self, visual_data: &VisualData) -> f32 {
+-        let mut confidence = 0.0;
++        let mut confidence: f32 = 0.0;
+         let checks: u8 = 8; // Total number of checks
+         
+         // Document data checks
+@@ -190,19 +190,19 @@
+         }
+         
+         // Check date of birth
+-        if visual_data.date_of_birth.is_some() {
++        if !visual_data.date_of_birth.is_empty() {
+             confidence += 1.0;
+         }
+         
+         // Check gender
+-        if visual_data.gender.is_some() {
++        if !visual_data.gender.is_empty() {
+             confidence += 1.0;
+         }
+         
+         // Check date of expiry
+-        if visual_data.date_of_expiry.is_some() {
++        if !visual_data.date_of_expiry.is_empty() {
+             confidence += 1.0;
+-        }
++        } 
+         
+         // Check date of issue
+-        if visual_data.date_of_issue.is_some() {
++        if !visual_data.date_of_issue.is_empty() {
+             confidence += 1.0;
+         }
+@@ -215,7 +215,7 @@
+         }
+         
+         // Calculate and return overall confidence score
+-        confidence.max(0.0).min(1.0)
++        confidence.max(0.0_f32).min(1.0_f32)
+     }
+     
+     // Validate consistency between MRZ and visual data zones
+@@ -244,17 +244,17 @@
+         }
+         
+         // Date of birth consistency
+-        if !mrz_data.date_of_birth.is_empty() && visual_data.date_of_birth.is_some() {
++        if !mrz_data.date_of_birth.is_empty() && !visual_data.date_of_birth.is_empty() {
+             let dob_similarity = self.calculate_date_similarity(
+                 &mrz_data.date_of_birth, 
+-                visual_data.date_of_birth.as_ref().unwrap()
++                &visual_data.date_of_birth
+             );
+             confidence += dob_similarity;
+             checks += 1;
+         }
+         
+         // Gender consistency 
+-        if !mrz_data.gender.is_empty() && visual_data.gender.is_some() {
+-            let gender_similarity = if mrz_data.gender == visual_data.gender.as_ref().unwrap() {
++        if !mrz_data.gender.is_empty() && !visual_data.gender.is_empty() {
++            let gender_similarity = if mrz_data.gender == visual_data.gender {
+                 1.0
+             } else {
+                 0.0

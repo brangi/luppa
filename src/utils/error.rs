@@ -13,12 +13,15 @@ pub enum PassportError {
     IoError(String),
     DatabaseError(String),
     CountryRuleNotFound(String),
+    OcrError(String),
+    PreprocessingError(String),
 }
 
 impl fmt::Display for PassportError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             PassportError::ImageProcessingError(msg) => write!(f, "Image processing error: {}", msg),
+            PassportError::OcrError(msg) => write!(f, "OCR error: {}", msg),
             PassportError::MrzExtractionError(msg) => write!(f, "MRZ extraction error: {}", msg),
             PassportError::MrzParsingError(msg) => write!(f, "MRZ parsing error: {}", msg),
             PassportError::SecurityFeatureDetectionError(msg) => write!(f, "Security feature detection error: {}", msg),
@@ -28,6 +31,7 @@ impl fmt::Display for PassportError {
             PassportError::IoError(msg) => write!(f, "IO error: {}", msg),
             PassportError::DatabaseError(msg) => write!(f, "Database error: {}", msg),
             PassportError::CountryRuleNotFound(msg) => write!(f, "Country rule not found: {}", msg),
+            PassportError::PreprocessingError(msg) => write!(f, "Image preprocessing error: {}", msg),
         }
     }
 }

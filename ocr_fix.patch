@@ -1,0 +1,12 @@
+--- a/src/processing/enhanced_ocr.rs
++++ b/src/processing/enhanced_ocr.rs
+@@ -222,9 +222,9 @@
+             let mut tess = Tesseract::new(None, Some(lang))
+                 .map_err(|e| PassportError::OcrError(format!("Tesseract init failed for ML: {e}")))?;
+-            tess.set_image(temp_file.path().to_str().unwrap())
++            let tess = tess.set_image(temp_file.path().to_str().unwrap())
+                 .map_err(|e| PassportError::OcrError(format!("Failed to set image for ML: {e}")))?;
+-            
++
+             tess.get_text()
+                 .map_err(|e| PassportError::OcrError(format!("OCR text extraction failed for ML: {e}")))?                
