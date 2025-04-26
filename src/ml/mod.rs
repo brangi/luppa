@@ -9,6 +9,9 @@
 // Simplified implementation that works with our existing universal OCR system
 pub mod simple_validator;
 
+// Advanced text correction with field-specific context awareness
+pub mod text_correction;
+
 // Re-export the simplified implementation
 pub use simple_validator::{SimpleValidator as FeatureExtractor, SimpleValidator as MlValidator, ValidationConfidence};
 

@@ -1,5 +1,5 @@
 use std::path::Path;
-use crate::models::{MrzData, VisualData, ValidationResult, CountryRules, SecurityFeatures, BiometricData, ChipData};
+use crate::models::{MrzData, VisualData, ValidationResult, CountryRules, SecurityFeatures, BiometricData};
 use crate::ml::{MlValidator, FeatureExtractor};
 use crate::processing::*;
 use crate::validation::*;
@@ -46,7 +46,11 @@ impl PassportValidator {
         // Step 4: Extract visual data using enhanced OCR with multi-language support
         // Configure with English, Spanish, French, German and fallback languages
         let tesseract_langs = &["eng", "spa", "fra", "deu"];
-        let visual_data = EnhancedOcrProcessor::extract_visual_data_from_bytes(&processed_image, tesseract_langs)?;
+        let initial_visual_data = EnhancedOcrProcessor::extract_visual_data_from_bytes(&processed_image, tesseract_langs)?;
+        
+        // Step 4b: Apply field correction to improve accuracy by cross-validating MRZ and visual data
+        println!("\n🔎 Cross-validating MRZ and visual data for higher accuracy...");
+        let visual_data = FieldCorrection::correct_visual_data(&mrz_data, &initial_visual_data);
         
         // Step 5: Extract biometric data using consolidated SecurityProcessor
         let biometric_data = SecurityProcessor::extract_biometric_data(&processed_image)?;
@@ -64,39 +68,34 @@ impl PassportValidator {
     
     // Validation function that uses pre-extracted data (useful for PDF processing)
     pub fn validate_with_extracted_data(&self, mrz_data: &MrzData, visual_data: &VisualData) -> Result<ValidationResult, PassportError> {
-        println!("Using pre-extracted passport data for validation");
+        // Apply field correction for improved accuracy
+        println!("\n🔎 Cross-validating MRZ and visual data for higher accuracy...");
+        let corrected_visual_data = FieldCorrection::correct_visual_data(mrz_data, visual_data);
         
-        // Generate security features from extracted data
-        // Since we're using pre-extracted data, we'll create a default set of security features
+        // Create placeholder security features
         let security_features = SecurityFeatures {
-            hologram_present: true,
-            microprinting_present: true,
-            uv_features_present: true,
-            ir_features_present: true,
-            watermark_present: true,
-            security_thread_present: true,
-            chip_present: true,
+            hologram_present: false,
+            microprinting_present: false,
+            uv_features_present: false,
+            ir_features_present: false,
+            watermark_present: false,
+            security_thread_present: false,
+            chip_present: false,
         };
         
-        // Generate biometric data from extracted data (placeholder)
+        // Create placeholder biometric data
         let biometric_data = BiometricData {
             face_image: None,
-            chip_data: Some(ChipData {
-                is_readable: true,
-                data_groups_present: vec!["DG1".to_string(), "DG2".to_string()],
-                authentication_success: true,
-            }),
+            chip_data: None,
         };
         
-        // Run all validation checks
-        let validation_result = self.validate_all(
+        // Validate the extracted data and return the result
+        self.validate_all(
             mrz_data.clone(),
             security_features,
-            visual_data.clone(),
+            corrected_visual_data,
             biometric_data
-        )?;
-        
-        Ok(validation_result)
+        )
     }
 
     // Validate all aspects of the passport
