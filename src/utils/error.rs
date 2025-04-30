@@ -13,6 +13,7 @@ pub enum PassportError {
     IoError(String),
     DatabaseError(String),
     CountryRuleNotFound(String),
+    InvalidDate(String),
 }
 
 impl fmt::Display for PassportError {
@@ -34,6 +35,7 @@ impl fmt::Display for PassportError {
             PassportError::IoError(msg) => write!(f, "IO error: {}", msg),
             PassportError::DatabaseError(msg) => write!(f, "Database error: {}", msg),
             PassportError::CountryRuleNotFound(msg) => write!(f, "Country rule not found: {}", msg),
+            PassportError::InvalidDate(msg) => write!(f, "Invalid date: {}", msg),
         }
     }
 }

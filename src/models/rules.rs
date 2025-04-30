@@ -1,12 +1,9 @@
 use crate::utils::PassportError;
 
-#[allow(dead_code)]
 pub struct CountryRules {
-    #[allow(dead_code)]
     pub countries: Vec<CountryRule>,
 }
 
-#[allow(dead_code)]
 pub struct CountryRule {
     pub country_code: String,
     pub country_name: String,
@@ -14,7 +11,6 @@ pub struct CountryRule {
     pub validation_rules: Vec<ValidationRule>,
 }
 
-#[allow(dead_code)]
 pub enum ValidationRule {
     RequiredField(String),
     FieldFormat(String, String), // Field name, Regex pattern
@@ -44,7 +40,6 @@ impl CountryRules {
         CountryRules { countries }
     }
 
-    #[allow(dead_code)]
     pub fn get_rule(&self, country_code: &str) -> Result<&CountryRule, PassportError> {
         self.countries
             .iter()

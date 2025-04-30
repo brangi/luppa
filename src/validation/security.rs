@@ -1,29 +1,52 @@
 use crate::models::{
-    DocumentFormat, SecurityFeatures, SecurityFeaturesValidationResult, ValidationIssue,
-    ValidationIssueType,
+    DocumentFormat, SecurityFeatures, SecurityFeaturesValidationResult,
+    ValidationResult, ValidationIssue, ValidationIssueType,
+    MrzValidationResult, FormatValidationResult, ExpiryValidationResult,
 };
-use crate::processing::SecurityProcessor;
 use crate::utils::PassportError;
 
 pub struct SecurityValidator;
 
 impl SecurityValidator {
-    pub fn validate(
-        security_features: &SecurityFeatures,
-    ) -> Result<SecurityFeaturesValidationResult, PassportError> {
-        // Default to TD3 (passport) format for backward compatibility
-        Self::validate_with_format(security_features, &Some(DocumentFormat::TD3))
+    pub fn new() -> Self {
+        SecurityValidator
+    }
+
+    pub fn validate(&self, _document: &crate::models::VisualData) -> Result<ValidationResult, PassportError> {
+        // Security feature validation is not implemented
+        Ok(ValidationResult {
+            is_valid: false,
+            mrz_validation: MrzValidationResult {
+                is_valid: true,
+                document_number_check_valid: true,
+                date_of_birth_check_valid: true,
+                date_of_expiry_check_valid: true,
+                personal_number_check_valid: true,
+                composite_check_valid: true,
+                issues: vec![],
+            },
+            format_validation: FormatValidationResult {
+                is_valid: true,
+                correct_format: true,
+                issues: vec![],
+            },
+            expiry_validation: ExpiryValidationResult {
+                is_valid: true,
+                not_expired: true,
+                issues: vec![],
+            },
+            issues: vec![ValidationIssue {
+                issue_type: ValidationIssueType::Security,
+                message: "Security feature validation is not implemented".to_string(),
+            }],
+        })
     }
 
     pub fn validate_with_format(
         security_features: &SecurityFeatures,
-        document_format: &Option<DocumentFormat>,
+        _document_format: &Option<DocumentFormat>,
     ) -> Result<SecurityFeaturesValidationResult, PassportError> {
         let mut issues = Vec::new();
-
-        // Use the SecurityProcessor to validate security features
-        let security_valid =
-            SecurityProcessor::validate_security_features(security_features, document_format);
 
         // Check basic security features
         let hologram_valid = security_features.hologram_present;
@@ -81,11 +104,10 @@ impl SecurityValidator {
 
         // Check chip
         let chip_valid = security_features.chip_present;
-        if !chip_valid && matches!(document_format, &Some(DocumentFormat::TD3)) {
-            // Modern passports should have chips
+        if !chip_valid {
             issues.push(ValidationIssue {
                 issue_type: ValidationIssueType::Security,
-                message: "Chip not detected in eMRTD".to_string(),
+                message: "Chip not detected".to_string(),
             });
         }
 
@@ -117,7 +139,7 @@ impl SecurityValidator {
         }
 
         // Overall validity
-        let is_valid = security_valid && issues.is_empty();
+        let is_valid = issues.is_empty();
 
         Ok(SecurityFeaturesValidationResult {
             is_valid,

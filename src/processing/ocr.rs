@@ -1,9 +1,8 @@
 use std::io::Write;
-use tempfile::NamedTempFile;
-use tesseract::Tesseract;
-use std::env;
 use std::path::Path;
 use std::process::Command;
+use tempfile::NamedTempFile;
+use tesseract::Tesseract;
 use crate::utils::PassportError;
 use crate::models::{MrzData, CheckDigits, VisualData, DocumentFormat};
 use whatlang::{detect, Lang};
@@ -14,59 +13,40 @@ pub struct OcrProcessor;
 impl OcrProcessor {
     /// Detect tessdata directory and return as Option
     pub fn tessdata_prefix() -> Option<String> {
-        println!("[DEBUG] Attempting to detect Brew prefix on macOS");
-        if let Ok(output) = Command::new("brew").arg("--prefix").output() {
-            if output.status.success() {
-                if let Ok(prefix_str) = String::from_utf8(output.stdout) {
-                    let prefix = prefix_str.trim().to_string();
-                    let tessdata_dir = Path::new(&prefix).join("share/tessdata");
-                    println!("[DEBUG] Checking Brew tessdata dir: {}", tessdata_dir.display());
+        // Check Brew installation on macOS
+        if cfg!(target_os = "macos") {
+            if let Ok(output) = Command::new("brew").arg("--prefix").output() {
+                if let Ok(prefix) = String::from_utf8(output.stdout) {
+                    let tessdata_dir = Path::new(prefix.trim()).join("share/tessdata");
                     if tessdata_dir.join("ocrb.traineddata").exists() {
-                        println!("[DEBUG] Found ocrb.traineddata in Brew dir");
-                        return Some(tessdata_dir.to_string_lossy().to_string());
-                    } else {
-                        println!("[DEBUG] ocrb.traineddata not found in Brew dir");
+                        return Some(tessdata_dir.to_string_lossy().into_owned());
                     }
-                } else {
-                    println!("[DEBUG] Failed to parse Brew prefix output");
                 }
-            } else {
-                println!("[DEBUG] Brew command failed");
             }
-        } else {
-            println!("[DEBUG] Brew command not found or failed to run");
         }
-        println!("[DEBUG] Checking TESSDATA_PREFIX environment variable");
-        if let Ok(prefix) = env::var("TESSDATA_PREFIX") {
-            let p = Path::new(&prefix);
-            println!("[DEBUG] TESSDATA_PREFIX set to: {}", prefix);
-            if p.join("ocrb.traineddata").exists() {
-                println!("[DEBUG] Found ocrb.traineddata in TESSDATA_PREFIX");
-                return Some(prefix.clone());
-            }
-            let td = p.join("tessdata");
-            println!("[DEBUG] Checking TESSDATA_PREFIX/tessdata: {}", td.display());
+
+        // Check TESSDATA_PREFIX environment variable
+        if let Ok(prefix) = std::env::var("TESSDATA_PREFIX") {
+            let td = Path::new(&prefix).join("tessdata");
             if td.join("ocrb.traineddata").exists() {
-                println!("[DEBUG] Found ocrb.traineddata in TESSDATA_PREFIX/tessdata");
-                return Some(td.to_string_lossy().to_string());
-            } else {
-                println!("[DEBUG] ocrb.traineddata not found in TESSDATA_PREFIX/tessdata");
+                return Some(prefix);
             }
-        } else {
-            println!("[DEBUG] TESSDATA_PREFIX not set");
         }
-        println!("[DEBUG] Checking common tessdata directories");
-        for cand in &["/usr/local/share/tessdata", "/opt/homebrew/share/tessdata"] {
-            let path = Path::new(cand);
-            println!("[DEBUG] Checking directory: {}", path.display());
+
+        // Check common tessdata directories
+        let common_paths = [
+            "/usr/share/tessdata",
+            "/usr/local/share/tessdata",
+            "/opt/homebrew/share/tessdata",
+        ];
+
+        for path in &common_paths {
+            let path = Path::new(path);
             if path.join("ocrb.traineddata").exists() {
-                println!("[DEBUG] Found ocrb.traineddata in {}", path.display());
-                return Some(cand.to_string());
-            } else {
-                println!("[DEBUG] ocrb.traineddata not found in {}", path.display());
+                return Some(path.to_string_lossy().into_owned());
             }
         }
-        println!("[DEBUG] ocrb.traineddata not found in any directory");
+
         None
     }
 

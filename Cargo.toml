@@ -7,7 +7,8 @@ description = "A comprehensive passport validation system in Rust with ICAO Doc 
 [dependencies]
 chrono = "0.4"
 image = "0.24"
-tesseract = "0.13"
+imageproc = "0.23"
+tesseract = "0.15"
 thiserror = "1.0"
 tempfile = "3.8"
 base64 = "0.21"
@@ -19,7 +20,7 @@ rsa = "0.9"  # For RSA operations
 sha2 = "0.10"  # For SHA hashing
 log = "0.4"  # Logging
 env_logger = "0.10"  # Logging implementation
-regex = "1.10.2"  # For pattern matching
+regex = "1.10"  # For pattern matching
 whatlang = "0.14"  # Language detection for automatic OCR language selection
 clap = { version = "4.3", features = ["derive"] }  # Command line argument parsing
 

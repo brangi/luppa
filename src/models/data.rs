@@ -162,12 +162,8 @@ pub enum ValidationIssueType {
 pub struct ValidationResult {
     pub is_valid: bool,
     pub mrz_validation: MrzValidationResult,
-    pub security_validation: SecurityFeaturesValidationResult,
     pub format_validation: FormatValidationResult,
-    pub biometric_validation: BiometricValidationResult,
-    pub database_validation: DatabaseValidationResult,
     pub expiry_validation: ExpiryValidationResult,
-    pub pki_validation: Option<PKIValidationResult>,
     pub issues: Vec<ValidationIssue>,
 }
 
