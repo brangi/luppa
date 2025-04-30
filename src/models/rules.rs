@@ -26,7 +26,7 @@ pub enum ValidationRule {
 impl CountryRules {
     pub fn new() -> Self {
         let mut countries = Vec::new();
-        
+
         // Add rule for Mexico (MEX)
         countries.push(CountryRule {
             country_code: "MEX".to_string(),
@@ -40,14 +40,20 @@ impl CountryRules {
                 ValidationRule::DateFormat("date_of_expiry".to_string(), "DD MM YYYY".to_string()),
             ],
         });
-        
+
         CountryRules { countries }
     }
-    
+
     #[allow(dead_code)]
     pub fn get_rule(&self, country_code: &str) -> Result<&CountryRule, PassportError> {
-        self.countries.iter()
+        self.countries
+            .iter()
             .find(|rule| rule.country_code == country_code)
-            .ok_or_else(|| PassportError::CountryRuleNotFound(format!("No rule found for country code: {}", country_code)))
+            .ok_or_else(|| {
+                PassportError::CountryRuleNotFound(format!(
+                    "No rule found for country code: {}",
+                    country_code
+                ))
+            })
     }
 }

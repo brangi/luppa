@@ -1,5 +1,5 @@
-use std::fmt;
 use std::error::Error;
+use std::fmt;
 
 #[derive(Debug)]
 pub enum PassportError {
@@ -18,12 +18,18 @@ pub enum PassportError {
 impl fmt::Display for PassportError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            PassportError::ImageProcessingError(msg) => write!(f, "Image processing error: {}", msg),
+            PassportError::ImageProcessingError(msg) => {
+                write!(f, "Image processing error: {}", msg)
+            }
             PassportError::MrzExtractionError(msg) => write!(f, "MRZ extraction error: {}", msg),
             PassportError::MrzParsingError(msg) => write!(f, "MRZ parsing error: {}", msg),
-            PassportError::SecurityFeatureDetectionError(msg) => write!(f, "Security feature detection error: {}", msg),
+            PassportError::SecurityFeatureDetectionError(msg) => {
+                write!(f, "Security feature detection error: {}", msg)
+            }
             PassportError::FormatError(msg) => write!(f, "Format error: {}", msg),
-            PassportError::BiometricExtractionError(msg) => write!(f, "Biometric extraction error: {}", msg),
+            PassportError::BiometricExtractionError(msg) => {
+                write!(f, "Biometric extraction error: {}", msg)
+            }
             PassportError::ValidationError(msg) => write!(f, "Validation error: {}", msg),
             PassportError::IoError(msg) => write!(f, "IO error: {}", msg),
             PassportError::DatabaseError(msg) => write!(f, "Database error: {}", msg),

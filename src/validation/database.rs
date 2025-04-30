@@ -1,4 +1,4 @@
-use crate::models::{VisualData, DatabaseValidationResult, ValidationIssue, ValidationIssueType};
+use crate::models::{DatabaseValidationResult, ValidationIssue, ValidationIssueType, VisualData};
 use crate::utils::PassportError;
 
 pub struct DatabaseValidator;
@@ -10,10 +10,10 @@ impl DatabaseValidator {
         // 1. Connect to a passport database
         // 2. Query for the document number
         // 3. Compare retrieved data with extracted data
-        
+
         let mut issues = Vec::new();
         let in_database = true; // Placeholder result
-        
+
         // If validation fails, add issues
         if !in_database {
             issues.push(ValidationIssue {
@@ -21,7 +21,7 @@ impl DatabaseValidator {
                 message: "Passport not found in database".to_string(),
             });
         }
-        
+
         Ok(DatabaseValidationResult {
             is_valid: in_database,
             in_database,
