@@ -1,36 +1,79 @@
-# Passport OCR System Documentation
+# Passport MRZ OCR and Validation System
 
 ## Overview
-This system is a robust, universal OCR solution for processing passport images, extracting and validating data according to ICAO Doc 9303 standards. It handles multiple languages, common OCR errors, and provides reliable field extraction and validation for developers and AI agents.
+A Rust-based OCR solution for extracting and validating Machine Readable Zone (MRZ) data from passport images. The system focuses on accurate MRZ data extraction and validation according to ICAO Doc 9303 standards, with robust handling of common OCR errors.
 
-## Core Functionalities
-- **Language-Agnostic Field Extraction**: Supports English, Spanish, French, German, and others; uses multi-language label detection with fallbacks.
-- **Improved Text Extraction**: Includes fuzzy matching, text cleaning, and image preprocessing (grayscale, contrast, adaptive thresholding).
-- **Universal Field Detection**: Extracts fields like place of birth using confidence scoring, handles multiple date formats with separator detection, and uses position/label-based methods.
-- **Error Handling & Resilience**: Manages missing Tesseract files, provides graceful fallbacks, and merges results from multiple OCR configurations.
-- **ML-Enhanced Validation**: Applies confidence scoring and ML-inspired heuristics for field validation.
-- **PDF and Image Processing**: Uses the image crate for preprocessing; PDF extraction is stubbed for future implementation.
-- **Batch Processing**: Processes multiple images with reporting on extraction quality and field completeness.
+## Core Functionality
 
-## Validations
-- **MRZ Validation**: Checks format and consistency of machine-readable zones, including date fields with error normalization (e.g., invalid months/days adjusted to valid ranges).
-- **Date Handling**: Improved parsing for birth and expiry dates, handling OCR noise (e.g., 'C'→'0') and determining century based on year values.
-- **Security Checks**: Includes PKI, biometric, and feature detection to ensure document authenticity.
+### MRZ Processing
+- Extracts MRZ data from passport images using Tesseract OCR
+- Handles common OCR errors through character normalization
+- Supports multiple MRZ formats (TD1, TD2, TD3)
+- Cleans and normalizes MRZ data fields
 
-## Business Logic
-- Ensures compliance with international standards for travel documents, reducing false positives/negatives in validation.
-- Supports use cases like identity verification, border control, and data migration, with a focus on reliability and expandability for future features.
+### Date Handling
+- Specialized parsing for MRZ date formats (YYMMDD)
+- Handles common OCR confusions (e.g., 'C'→'0', 'E'→'3')
+- Normalizes invalid date values to valid ranges
+- Formats dates in human-readable format (DD/MM/YYYY)
 
-## Technical Stack
-- Built in Rust using the luppa library for core validations.
-- Depends on external crates for image processing and OCR (e.g., Tesseract via TESSDATA_PREFIX environment variable).
+### Validation
+- Validates MRZ data structure and check digits
+- Verifies document format compliance with ICAO Doc 9303
+- Checks document expiry status
+- Provides detailed validation results with specific issues
 
-## How to Run
-1. Ensure dependencies are installed (e.g., Tesseract OCR).
-2. Set TESSDATA_PREFIX environment variable.
-3. Compile and run the Rust application from the project root.
+### Visual Data Extraction
+- Extracts and processes visual inspection zone (VIZ) data
+- Handles common OCR errors in personal information
+- Supports multiple languages through Tesseract's language capabilities
 
-## Future Improvements
-- Address code warnings for unused functions.
-- Enhance testing with diverse passport formats and languages.
-- Implement full PDF support and advanced ML validation.
+## Technical Implementation
+- Built in Rust for performance and safety
+- Uses Tesseract OCR for text recognition
+- Implements custom date parsing and validation logic
+- Provides clear error handling and reporting
+
+## Dependencies
+- Tesseract OCR (v4.0.0+)
+- Tesseract language data files (ocrb.traineddata)
+- Rust toolchain (stable)
+
+## Installation
+
+1. Install Tesseract OCR:
+   - macOS: `brew install tesseract`
+   - Linux: `sudo apt-get install tesseract-ocr`
+
+2. Ensure Tesseract data files are available:
+   - The system will automatically check common locations including:
+     - Homebrew installation directory
+     - TESSDATA_PREFIX environment variable
+     - Standard system locations (/usr/share/tessdata, /usr/local/share/tessdata)
+
+3. Build the project:
+   ```
+   cargo build --release
+   ```
+
+## Usage
+
+The system processes passport images and validates the extracted MRZ data:
+
+```rust
+use std::path::Path;
+use luppa::processing::{ImageProcessor, OcrProcessor};
+use luppa::verification::MRTDVerifier;
+
+let image_path = Path::new("path/to/passport.jpg");
+let processed_image = ImageProcessor::process_image(image_path)?;
+let mrz_data = OcrProcessor::extract_mrz(&processed_image)?;
+let visual_data = OcrProcessor::extract_visual_data(&processed_image)?;
+let result = MRTDVerifier::new().verify(&processed_image, &mrz_data, &visual_data)?;
+```
+
+## Known Limitations
+- Primarily focused on MRZ data extraction and validation
+- Limited support for non-Latin scripts
+- No built-in support for PDF documents
+- Requires Tesseract OCR to be installed separately
